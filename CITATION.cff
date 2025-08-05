@@ -7,6 +7,17 @@ authors:
     orcid: https://orcid.org/0009-0006-8783-0446
     website: https://nkalauni.github.io
     affiliation: The University of Arizona
+  # add additional entries for each author -- see https://github.com/citation-file-format/citation-file-format/blob/main/schema-guide.
+- family-names: Fallah
+    given-names: Ali
+    orcid: https://orcid.org/0000-0001-8273-4638
+    website: https://github.com/alifallahm
+    affiliation: University of Massachusetts Lowell (NCAR Intern)
+  - family-names: Ganz
+    given-names: Keenan
+    orcid: https://orcid.org/0000-0002-8486-3959
+    website: https://github.com/s-kganz
+    affiliation: University of Washington
   - family-names: Rose
     given-names: Brian E. J.
     orcid: https://orcid.org/0000-0002-9961-3821 # optional
