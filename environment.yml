@@ -1,5 +1,6 @@
 name: cookbook-dev
 channels:
+  - pytorch
   - conda-forge
 dependencies:
   - jupyterlab
@@ -10,7 +11,7 @@ dependencies:
   - intake
   - matplotlib
   - IPython
-  - torch
+  - pytorch
   - xbatcher
   - sphinx
   - sphinxcontrib-applehelp
