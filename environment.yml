@@ -5,3 +5,20 @@ dependencies:
   - jupyterlab
   - mystmd
   - jupyterlab-myst
+  - numpy
+  - xarray
+  - intake
+  - matplotlib
+  - IPython
+  - torch
+  - xbatcher
+  - sphinx
+  - sphinxcontrib-applehelp
+  - sphinxcontrib-devhelp
+  - sphinxcontrib-htmlhelp
+  - sphinxcontrib-qthelp
+  - sphinxcontrib-serializinghtml
+  - pydata-sphinx-theme
+  - jsonschema-with-format-nongpl
+  - docutils
+  - sphinx-pythia-theme
