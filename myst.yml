@@ -15,7 +15,7 @@ project:
         - file: notebooks/how-to-cite.md
     - title: Testing model inference
       children:
-        - file: notebooks/inference_testing.ipynb
+        - file: notebooks/inference-testing.ipynb
     - title: Inference functions
       children:
         - file: notebooks/functions.ipynb
