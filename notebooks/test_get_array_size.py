@@ -4,6 +4,8 @@ import xarray as xr
 import numpy as np
 import pytest
 
+from functions import _get_output_array_size
+
 @pytest.fixture
 def bgen_fixture() -> xbatcher.BatchGenerator:
     data = xr.DataArray(
@@ -16,7 +18,6 @@ def bgen_fixture() -> xbatcher.BatchGenerator:
         }
     )
     
-    # 2. Create the BatchGenerator with input dimensions and overlap
     bgen = xbatcher.BatchGenerator(
         data,
         input_dims=dict(x=10, y=10),
@@ -29,11 +30,9 @@ def bgen_fixture() -> xbatcher.BatchGenerator:
     [
         (
             "Resampling only: Downsample x, Upsample y",
-            # window=10 -> tensor=5 (0.5x); window=10 -> tensor=20 (2x)
             {'x': 5, 'y': 20},  
             [],
             ['x', 'y'],
-            # ds_size=100 * 0.5 = 50; ds_size=100 * 2 = 200
             {'x': 50, 'y': 200} 
         ),
         (
@@ -45,11 +44,9 @@ def bgen_fixture() -> xbatcher.BatchGenerator:
         ),
         (
             "Mixed: Resample x and add new channel dimension",
-            # window=10 -> tensor=30 (3x)
             {'x': 30, 'channel': 12}, 
             ['channel'],
             ['x'],
-            # ds_size=100 * 3 = 300
             {'x': 300, 'channel': 12} 
         ),
         (
@@ -57,18 +54,16 @@ def bgen_fixture() -> xbatcher.BatchGenerator:
             {'x': 10, 'y': 10},
             [],
             ['x', 'y'],
-            # ds_size * 1 = ds_size
             {'x': 100, 'y': 100} 
         ),
         (
             "Dimension not in batcher is treated as new",
-            # 't' is in the dataset but not in `input_dims`, so it's not a resample dim.
-            # The logic should treat it as a new dimension.
             {'t': 5},
             ['t'],
             [],
             {'t': 5}
         )
+        
     ]
 )
 def test_get_output_array_size_scenarios(
@@ -99,21 +94,17 @@ def test_get_output_array_size_raises_assertion_error_on_non_integer_size():
     Tests that the function raises an AssertionError when the resampling
     calculation results in a non-integer output dimension size.
     """
-    # Create a dataset where the total size is not a clean multiple
-    # for the resampling ratio we will test.
     # DataArray size for 'x' is 101.
     data_for_error = xr.DataArray(
         data=np.random.rand(101, 100, 10),
         dims=("x", "y", "t")
     )
     
-    # The batch window size for 'x' is 10.
     bgen = xbatcher.BatchGenerator(data_for_error, input_dims={'x': 10})
     
     # The resampling logic will be: 101 * (5 / 10) = 50.5, which is not an integer.
     output_tensor_dim = {'x': 5}
     
-    # Use pytest.raises to assert that an AssertionError is thrown.
     with pytest.raises(AssertionError):
         _get_output_array_size(
             bgen=bgen,
