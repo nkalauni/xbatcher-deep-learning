@@ -3,8 +3,8 @@ version: 1
 extends:
   - https://raw.githubusercontent.com/projectpythia/pythia-config/main/pythia.yml
 project:
-  title: Project Pythia Cookbook Template
-  github: https://github.com/projectpythia/cookbook-template
+  title: Xbatcher for deep learning
+  github: https://github.com/projectpythia/xbatcher-deep-learning
   authors:
     - name: The Project Pythia Community
   copyright: '2024'
@@ -13,9 +13,12 @@ project:
     - title: Preamble
       children:
         - file: notebooks/how-to-cite.md
-    - title: Introduction
+    - title: Testing model inference
       children:
-        - file: notebooks/notebook-template.ipynb
+        - file: notebooks/inference-testing.ipynb
+    - title: Inference functions
+      children:
+        - file: notebooks/functions.ipynb
   jupyter:
       binder:
-        repo: projectpythia/cookbook-template
+        repo: projectpythia/xbatcher-deep-learning
