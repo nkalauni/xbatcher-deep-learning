@@ -11,3 +11,4 @@ dependencies:
   - matplotlib
   - pytorch-cpu
   - xbatcher
+  - pytest
