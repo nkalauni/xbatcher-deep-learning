@@ -36,7 +36,7 @@ def _get_output_array_size(
             # determined by the source array
             if output_tensor_dim[key] != bgen.ds.sizes[key]:
                 raise ValueError(
-                    f"Axis {dim} is a core dim, but the tensor size"
+                    f"Axis {key} is a core dim, but the tensor size"
                     f"({output_tensor_dim[key]}) does not equal the"
                     f"source data array size ({bgen.ds.sizes[key]})."
                 )
@@ -48,7 +48,7 @@ def _get_output_array_size(
             assert temp_output_size.is_integer()
             output_size[key] = int(temp_output_size)
         else:
-            raise ValueError(f"Axis {dim} must be specified in one of new_dim, core_dim, or resample_dim") 
+            raise ValueError(f"Axis {key} must be specified in one of new_dim, core_dim, or resample_dim") 
     return output_size
 
 def predict_on_array(
