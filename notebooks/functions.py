@@ -1,7 +1,7 @@
 import xarray as xr
 import numpy as np
 import xbatcher
-from xbatcher.loaders.torch import MapDataset
+from xbatcher.loaders.torch import MapDataset, IterableDataset
 import torch
 
 def _get_resample_factor(
@@ -21,6 +21,7 @@ def _get_output_array_size(
     bgen: xbatcher.BatchGenerator,
     output_tensor_dim: dict[str, int],
     new_dim: list[str],
+    core_dim: list[str],
     resample_dim: list[str]
 ):
     resample_factor = _get_resample_factor(bgen, output_tensor_dim, resample_dim)
@@ -30,29 +31,97 @@ def _get_output_array_size(
             # This is a new axis, size is determined
             # by the tensor size.
             output_size[key] = output_tensor_dim[key]
-        else:
+        elif key in core_dim:
+            # This is an old but unmodified axis, size is
+            # determined by the source array
+            if output_tensor_dim[key] != bgen.ds.sizes[key]:
+                raise ValueError(
+                    f"Axis {dim} is a core dim, but the tensor size"
+                    f"({output_tensor_dim[key]}) does not equal the"
+                    f"source data array size ({bgen.ds.sizes[key]})."
+                )
+            output_size[key] = bgen.ds.sizes[key]
+        elif key in resample_dim:
             # This is a resampled axis, determine the new size
-            # by the ratio of the batchgen window to the tensor size.
+            # by the resample factor.
             temp_output_size = bgen.ds.sizes[key] * resample_factor[key]
             assert temp_output_size.is_integer()
             output_size[key] = int(temp_output_size)
+        else:
+            raise ValueError(f"Axis {dim} must be specified in one of new_dim, core_dim, or resample_dim") 
     return output_size
 
 def predict_on_array(
-    dataset: MapDataset,
+    dataset: MapDataset | IterableDataset,
     model: torch.nn.Module,
     output_tensor_dim: dict[str, int],
     new_dim: list[str],
+    core_dim: list[str],
     resample_dim: list[str],
     batch_size: int=16
-):
+) -> xr.DataArray:
+    '''
+    Generate predictions from a PyTorch model and reassemble predictions
+    into a ``xr.DataArray``, accounting for changes in dimensions. This function
+    is analagous to ``xr.apply_ufunc``, except we operate on array patches instead
+    of array slices and the user function is replaced with a PyTorch module.
+
+    ``model`` is allowed to drop axes, add axes, or resize axes compared to
+    the input tensor. As in ``xr.apply_ufunc``, users must specify how axes
+    change via ``new_dim`` and ``resample_dim``. At least one output
+    axis must be an input dimension in the ``BatchGenerator`` used to
+    generate array patches.
+
+    
+
+    Parameters
+    ----------
+    ``dataset`` (``MapDataset | IterableDataset``): A dataset that uses a
+    ``BatchGenerator`` to produce examples.
+
+    ``model`` (``torch.nn.Module``): A PyTorch module that returns a single
+    output tensor.
+
+    ``output_tensor_dim`` (``dict[str, int]``): A dictionary representing the
+    names and sizes of output tensor dimensions.
+
+    ``new_dim`` (``list[str]``): A list of axes in ``output_tensor_dim`` that
+    are independent of the batch generator and source array. 
+    These will be inserted as new dimensions in the output ``xr.DataArray``.
+
+    ``core_dim`` (``list[str]``): A list of axes in ``output_tensor_dim`` that
+    are unchanged from the source array and not used for windowing in ``dataset``.
+
+    ``resample_dim`` (``list[str]``): A list of axes in ``output_tensor_dim`` that
+    are used to generate patches in ``dataset``. Only these axes are allowed to change
+    size.
+
+    Notes
+    -----
+    The output array size is determined by the axes in ``output_tensor_dim`` according
+    to the below table.
+
+    | Axis          | Output size                                     |
+    |---------------|-------------------------------------------------|
+    | New axis      | Same as tensor size                             |
+    | Core axis     | Same as source ``xr.DataArray`` size            |
+    | Resample axis | Source array size * (tensor size / window size) |
+
+    For example, consider a super-resolution workflow where ``dataset`` generates
+    patches of size (x=10, y=10), ``model`` generates patches of size (x=20, y=20),
+    and the source ``xr.DataArray`` has size (x=512, y=512). From the above table,
+    we see that the tensor increases the size of both axes by a factor of 2. Therefore,
+    the output data array will have size (x=1024, y=2024).
+
+    Models may coarsen or densify tensors, but must do so by an integer factor.
+    '''
     # TODO input checking
 
     # Get resample factors
     resample_factor = _get_resample_factor(dataset.X_generator, output_tensor_dim, resample_dim)
     
     # Set up output array
-    output_size = _get_output_array_size(dataset.X_generator, output_tensor_dim, new_dim, resample_dim)
+    output_size = _get_output_array_size(dataset.X_generator, output_tensor_dim, new_dim, core_dim, resample_dim)
             
     output_da = xr.DataArray(
         data=np.zeros(tuple(output_size.values())),
