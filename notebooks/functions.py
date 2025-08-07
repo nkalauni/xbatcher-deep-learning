@@ -4,6 +4,8 @@ import xbatcher
 from xbatcher.loaders.torch import MapDataset, IterableDataset
 import torch
 
+from typing import Literal
+
 def _get_resample_factor(
     bgen: xbatcher.BatchGenerator,
     output_tensor_dim: dict[str, int],
@@ -18,6 +20,7 @@ def _get_resample_factor(
         resample_factor[dim] = r
 
     return resample_factor
+
 
 def _get_output_array_size(
     bgen: xbatcher.BatchGenerator,
@@ -53,6 +56,48 @@ def _get_output_array_size(
             raise ValueError(f"Axis {key} must be specified in one of new_dim, core_dim, or resample_dim") 
     return output_size
 
+
+def _resample_coordinate(
+    coord: xr.DataArray,
+    factor: float,
+    mode: Literal["centers", "edges"]="edges"
+) -> np.ndarray:
+    '''
+    Coarsen or densify a 1D array of xarray coordinates. ``factor > 1``
+    densifies, and ``factor < 1`` coarsens.
+
+    **It is assumed that entries in ``coord`` have constant step size**.
+    '''
+    assert len(coord.shape) == 1 and coord.shape[0] > 1
+    assert (coord.shape[0] * factor).is_integer()
+    old_step = (coord.data[1] - coord.data[0])
+    offset = 0 if mode == "edges" else old_step / 2
+    new_step = old_step / factor
+    coord = coord - offset
+    return np.arange(coord.min().item(), coord.max().item()+old_step, step=new_step) + offset
+
+
+def _get_output_array_coordinates(
+    src_da: xr.DataArray,
+    output_array_dim: list[str],
+    resample_factor: dict[str, int],
+    resample_mode: Literal["centers", "edges"]="edges"
+) -> dict[str, np.ndarray]:
+    output_coords = {}
+    for dim in output_array_dim:
+        if dim in src_da.coords and dim in resample_factor:
+            # Source array has coordinate and it is changing
+            output_coords[dim] = _resample_coordinate(src_da[dim], resample_factor[dim], resample_mode)
+        elif dim in src_da.coords:
+            # Source array has coordinate but it isn't changing size
+            output_coords[dim] = src_da[dim].copy()
+        else:
+            # Source array doesn't have a coordinate on this dim or
+            # this is a new dim, ignore
+            continue
+    return output_coords
+    
+    
 def predict_on_array(
     dataset: MapDataset | IterableDataset,
     model: torch.nn.Module,
@@ -60,6 +105,7 @@ def predict_on_array(
     new_dim: list[str],
     core_dim: list[str],
     resample_dim: list[str],
+    resample_mode: Literal["centers", "edges"]="edges",
     batch_size: int=16
 ) -> xr.DataArray:
     '''
@@ -98,6 +144,9 @@ def predict_on_array(
     are used to generate patches in ``dataset``. Only these axes are allowed to change
     size.
 
+    ``resample_mode`` (``"edges"|"centers"``): Whether to treat coordinates on the input
+    array as pixel edges or centers.
+
     Notes
     -----
     The output array size is determined by the axes in ``output_tensor_dim`` according
@@ -110,24 +159,37 @@ def predict_on_array(
     | Resample axis | Source array size * (tensor size / window size) |
 
     For example, consider a super-resolution workflow where ``dataset`` generates
-    patches of size (x=10, y=10), ``model`` generates patches of size (x=20, y=20),
+    patches of size (x=10, y=10), ``model`` generates tensors of size (x=20, y=20),
     and the source ``xr.DataArray`` has size (x=512, y=512). From the above table,
-    we see that the tensor increases the size of both axes by a factor of 2. Therefore,
+    we see that the model increases the size of both window axes by a factor of 2. Therefore,
     the output data array will have size (x=1024, y=2024).
 
     Models may coarsen or densify tensors, but must do so by an integer factor.
+
+    Overlaps are allowed, in which case the average of all output values is returned.
     '''
     # TODO input checking
+    # *_dim args cannot have common axes
 
     # Get resample factors
-    resample_factor = _get_resample_factor(dataset.X_generator, output_tensor_dim, resample_dim)
+    resample_factor = _get_resample_factor(
+        dataset.X_generator, 
+        output_tensor_dim, 
+        resample_dim
+    )
     
     # Set up output array
-    output_size = _get_output_array_size(dataset.X_generator, output_tensor_dim, new_dim, core_dim, resample_dim)
+    output_size = _get_output_array_size(
+        dataset.X_generator, 
+        output_tensor_dim, 
+        new_dim, 
+        core_dim, 
+        resample_dim
+    )
             
     output_da = xr.DataArray(
         data=np.zeros(tuple(output_size.values())),
-        dims=tuple(output_size.keys())
+        dims=tuple(output_size.keys()),
     )
     output_n = xr.full_like(output_da, 0)
     
@@ -154,7 +216,21 @@ def predict_on_array(
             
             output_da.loc[new_indexer] += out_batch[ib, ...]
             output_n.loc[new_indexer] += 1
-    
+
+    # Calculate mean
     output_da = output_da / output_n
+
+    # Assign coordinates
+    # We wait to do this until the very end because slicing into the
+    # output array is easier with integer indices. .loc[] would follow
+    # the assigned coordinates if we did this earlier.
+    output_da = output_da.assign_coords(
+        _get_output_array_coordinates(
+            dataset.X_generator.ds, 
+            list(output_tensor_dim.keys()), 
+            resample_factor, 
+            resample_mode
+        )
+    )
 
     return output_da
