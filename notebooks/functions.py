@@ -12,8 +12,10 @@ def _get_resample_factor(
     resample_factor = {}
     for dim in resample_dim:
         r = output_tensor_dim[dim] / bgen.input_dims[dim]
-        assert r.is_integer() or (r ** -1).is_integer()
-        resample_factor[dim] = output_tensor_dim[dim] / bgen.input_dims[dim]
+        is_int = (r == int(r))
+        is_inv_int = (1/r == int(1/r)) if r != 0 else False
+        assert is_int or is_inv_int, f"Resample ratio for dim '{dim}' must be an integer or its inverse."
+        resample_factor[dim] = r
 
     return resample_factor
 
@@ -37,7 +39,7 @@ def _get_output_array_size(
             if output_tensor_dim[key] != bgen.ds.sizes[key]:
                 raise ValueError(
                     f"Axis {key} is a core dim, but the tensor size"
-                    f"({output_tensor_dim[key]}) does not equal the"
+                    f"({output_tensor_dim[key]}) does not equal the "
                     f"source data array size ({bgen.ds.sizes[key]})."
                 )
             output_size[key] = bgen.ds.sizes[key]
@@ -45,7 +47,7 @@ def _get_output_array_size(
             # This is a resampled axis, determine the new size
             # by the resample factor.
             temp_output_size = bgen.ds.sizes[key] * resample_factor[key]
-            assert temp_output_size.is_integer()
+            assert temp_output_size.is_integer(), f"Resampling for dim '{key}' results in non-integer size."
             output_size[key] = int(temp_output_size)
         else:
             raise ValueError(f"Axis {key} must be specified in one of new_dim, core_dim, or resample_dim") 
