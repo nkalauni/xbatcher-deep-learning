@@ -1,5 +1,9 @@
 import torch
 
+class Identity(torch.nn.Module):
+    def __init__(self): super().__init__()
+    def forward(self, x): return x
+
 class MeanAlongDim(torch.nn.Module):
     def __init__(self, ax):
         super(MeanAlongDim, self).__init__()
