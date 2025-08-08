@@ -169,8 +169,12 @@ def predict_on_array(
 
     Overlaps are allowed, in which case the average of all output values is returned.
     '''
-    # TODO input checking
-    # *_dim args cannot have common axes
+    s_new = set(new_dim)
+    s_core = set(core_dim)
+    s_resample = set(resample_dim)
+
+    if s_new & s_core or s_new & s_resample or s_core & s_resample:
+        raise ValueError("new_dim, core_dim, and resample_dim must be disjoint sets.")
 
     bgen = dataset.X_generator
 
