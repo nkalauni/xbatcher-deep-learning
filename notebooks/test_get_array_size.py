@@ -46,11 +46,11 @@ def bgen_fixture() -> xbatcher.BatchGenerator:
         ),
         (
             "Mixed: Resample x, add new channel dimension and keep t as core",
-            {'x': 30, 'channel': 12}, 
+            {'x': 30, 'channel': 12, 't': 10}, 
             ['channel'],
             ['t'],
             ['x'],
-            {'x': 300, 'channel': 12} 
+            {'x': 300, 'channel': 12, 't': 10} 
         ),
         (
             "Identity resampling (ratio=1)",
