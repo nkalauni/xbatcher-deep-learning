@@ -13,3 +13,4 @@ dependencies:
   - xbatcher
   - rioxarray
   - tqdm
+  - pytest
