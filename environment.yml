@@ -11,4 +11,5 @@ dependencies:
   - matplotlib
   - pytorch-cpu
   - xbatcher
-  - pytest
+  - rioxarray
+  - tqdm

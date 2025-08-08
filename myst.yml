@@ -6,8 +6,8 @@ project:
   title: Xbatcher for deep learning
   github: https://github.com/projectpythia/xbatcher-deep-learning
   authors:
-    - name: The Project Pythia Community
-  copyright: '2024'
+    - name: Keenan Ganz, Nabin Kalauni, and The Project Pythia Community
+  copyright: '2025'
   toc:
     - file: README.md
     - title: Preamble
@@ -16,9 +16,9 @@ project:
     - title: Testing model inference
       children:
         - file: notebooks/inference-testing.ipynb
-    # - title: Inference functions
-    #   children:
-    #     - file: notebooks/functions.ipynb
+    - title: Example with topography data
+      children:
+        - file: notebooks/autoencoder.ipynb
   jupyter:
       binder:
         repo: projectpythia/xbatcher-deep-learning

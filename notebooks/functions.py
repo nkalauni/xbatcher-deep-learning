@@ -3,6 +3,7 @@ import numpy as np
 import xbatcher
 from xbatcher.loaders.torch import MapDataset, IterableDataset
 import torch
+from tqdm import tqdm
 
 from typing import Literal
 
@@ -69,13 +70,17 @@ def _resample_coordinate(
     **It is assumed that entries in ``coord`` have constant step size**.
     '''
     assert len(coord.shape) == 1 and coord.shape[0] > 1
-    assert (coord.shape[0] * factor).is_integer()
-    old_step = (coord.data[1] - coord.data[0])
-    offset = 0 if mode == "edges" else old_step / 2
-    new_step = old_step / factor
-    coord = coord - offset
-    new_coord_end = coord.max().item() + old_step
-    return np.arange(coord.min().item(), new_coord_end, step=new_step) + offset
+
+    new_n = coord.shape[0] * factor
+    assert new_n.is_integer()
+
+    old_step = coord.data[1] - coord.data[0]
+    return np.linspace(
+        coord.data[0], 
+        coord.data[-1] + old_step, 
+        num=int(coord.shape[0] * factor),
+        endpoint=False
+    )
 
 
 def _get_output_array_coordinates(
@@ -204,7 +209,7 @@ def predict_on_array(
     loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size)
 
     # Iterate over each batch
-    for i, batch in enumerate(loader):
+    for i, batch in tqdm(enumerate(loader), total=len(loader)):
         input_tensor = batch[0] if isinstance(batch, (list, tuple)) else batch
         out_batch = model(input_tensor).detach().numpy()
 
