@@ -1,6 +1,9 @@
-thumbnail: thumbnail.png
+thumbnail: tensor_workflow.png
 tags:
   domains:
-    - sampledomain
+    - deep learning
+    - earth science
   packages:
-    - samplepackage
+    - xarray
+    - xbatcher
+    - pytorch

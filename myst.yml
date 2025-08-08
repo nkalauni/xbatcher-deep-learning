@@ -16,9 +16,9 @@ project:
     - title: Testing model inference
       children:
         - file: notebooks/inference-testing.ipynb
-    - title: Inference functions
-      children:
-        - file: notebooks/functions.ipynb
+    # - title: Inference functions
+    #   children:
+    #     - file: notebooks/functions.ipynb
   jupyter:
       binder:
         repo: projectpythia/xbatcher-deep-learning
