@@ -13,12 +13,13 @@ project:
     - title: Preamble
       children:
         - file: notebooks/how-to-cite.md
+    - title: Xbatcher fundamentals
+      children:
+        - file: notebooks/xbatcher_dataloading.ipynb
+        - file: notebooks/xbatcher_reconstruction.ipynb
     - title: Testing model inference
       children:
         - file: notebooks/inference-testing.ipynb
-    # - title: Inference functions
-    #   children:
-    #     - file: notebooks/functions.ipynb
   jupyter:
       binder:
         repo: projectpythia/xbatcher-deep-learning
