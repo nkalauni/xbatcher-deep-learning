@@ -1,4 +1,4 @@
-# (Replace_with_your_title) Cookbook
+# Xarray for Deep Learning Cookbook
 
 <img src="thumbnails/thumbnail.png" alt="thumbnail" width="300"/>
 
@@ -6,35 +6,33 @@
 [![Binder](https://binder.projectpythia.org/badge_logo.svg)](https://binder.projectpythia.org/v2/gh/ProjectPythia/cookbook-template/main?labpath=notebooks)
 [![DOI](https://zenodo.org/badge/475509405.svg)](https://zenodo.org/badge/latestdoi/475509405)
 
-_See the [Cookbook Contributor's Guide](https://projectpythia.org/cookbook-guide) for step-by-step instructions on how to create your new Cookbook and get it hosted on the [Pythia Cookbook Gallery](https://cookbooks.projectpythia.org)!_
-
-This Project Pythia Cookbook covers ... (replace `...` with the main subject of your cookbook ... e.g., _working with radar data in Python_)
+This Project Pythia Cookbook covers a workflow for using Xarray and xbatcher for deep learning applications. Specifically, it demonstrates a reusable workflow for recreating an xarray dataset from a deep learning model's output, which can be used for further analysis or visualization.
 
 ## Motivation
 
-(Add a few sentences stating why this cookbook will be useful. What skills will you, "the chef", gain once you have reached the end of the cookbook?)
+This cookbook will be useful for data scientists and machine learning practitioners who want to leverage the power of `xarray` and `xbatcher` for their deep learning workflows. By the end of this cookbook, you will have gained skills in loading and processing Xarray datasets into a format suitable for deep learning using `xbatcher` and furthermore, you will learn how to recreate an Xarray dataset from the output of a deep learning model.
 
 ## Authors
 
-[First Author](https://github.com/first-author1), [Second Author](https://github.com/second-author2), etc. _Acknowledge primary content authors here_
+[Keenan Ganz](https://github.com/s-kganz), [Nabin Kalauni](https://github.com/nkalauni)
 
 ### Contributors
 
-<a href="https://github.com/ProjectPythia/cookbook-template/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=ProjectPythia/cookbook-template" />
+<a href="https://github.com/ProjectPythia/xbatcher-deep-learning/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=ProjectPythia/xbatcher-deep-learning" />
 </a>
 
 ## Structure
 
-(State one or more sections that will comprise the notebook. E.g., _This cookbook is broken up into two main sections - "Foundations" and "Example Workflows."_ Then, describe each section below.)
+This cookbook is broken up into two main sections - "xbatcher Fundamentals" and "Example Workflow". The first section covers the foundational concepts and tools needed to work with `xbatcher` and `xarray`, while the second section provides a practical example of how to use these tools in a complete end-to-end workflow.
 
-### Section 1 ( Replace with the title of this section, e.g. "Foundations" )
+### xbatcher Fundamentals
 
-(Add content for this section, e.g., "The foundational content includes ... ")
+The foundational content includes an overview of `xbatcher`, its key features, and how it integrates with `xarray` for efficient data handling in deep learning workflows. The first chapter covers using xbatcher to create batches of data from an `xarray` dataset whereas the second chapter focuses on recreating an `xarray` dataset from the output of a deep learning model.
 
-### Section 2 ( Replace with the title of this section, e.g. "Example workflows" )
+### Example Workflow
 
-(Add content for this section, e.g., "Example workflows include ... ")
+Example workflow includes using `xbatcher` to create batches of data from an `xarray` dataset (ASTER Global Digital Elevation model), training an Autoencoder on this data, and then using `xbatcher` again to reassemble the model's output into a new `xarray` dataset.
 
 ## Running the Notebooks
 
@@ -53,7 +51,7 @@ on the rocket ship icon, (see figure below), and be sure to select
 notebook that you can interact with. I.e. you’ll be able to execute
 and even change the example programs. You’ll see that the code cells
 have no output at first, until you execute them by pressing
-{kbd}`Shift`\+{kbd}`Enter`. Complete details on how to interact with
+<kbd>Shift</kbd>+<kbd>Enter</kbd>. Complete details on how to interact with
 a live Jupyter notebook are described in [Getting Started with
 Jupyter](https://foundations.projectpythia.org/foundations/getting-started-jupyter).
 
@@ -66,22 +64,20 @@ executable book chapter.
 
 If you are interested in running this material locally on your computer, you will need to follow this workflow:
 
-(Replace "cookbook-example" with the title of your cookbooks)
-
-1. Clone the `https://github.com/ProjectPythia/cookbook-example` repository:
+1. Clone the `https://github.com/ProjectPythia/xbatcher-deep-learning` repository:
 
    ```bash
-    git clone https://github.com/ProjectPythia/cookbook-example.git
+    git clone https://github.com/ProjectPythia/xbatcher-deep-learning.git
    ```
 
-1. Move into the `cookbook-example` directory
+1. Move into the `xbatcher-deep-learning` directory
    ```bash
-   cd cookbook-example
+   cd xbatcher-deep-learning
    ```
 1. Create and activate your conda environment from the `environment.yml` file
    ```bash
    conda env create -f environment.yml
-   conda activate cookbook-example
+   conda activate cookbook-dev
    ```
 1. Move into the `notebooks` directory and start up Jupyterlab
    ```bash
